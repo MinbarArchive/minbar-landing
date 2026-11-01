@@ -1,6 +1,7 @@
 export type Khutba = {
   id: number;
   title: string;
+  topic?: string;
   imam: string;
   mosque: string;
   city: string;
