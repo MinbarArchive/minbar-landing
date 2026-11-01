@@ -26,7 +26,7 @@ export function ArchiveExplorer({ items }: { items: Khutba[] }) {
   const filtered = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("ru");
     return items.filter((item) => {
-      const haystack = [item.title, item.imam, item.mosque, item.city, item.summary, item.transcript].filter(Boolean).join(" ").toLocaleLowerCase("ru");
+      const haystack = [item.title, item.topic, item.imam, item.mosque, item.city, item.summary, item.transcript].filter(Boolean).join(" ").toLocaleLowerCase("ru");
       return (!normalized || haystack.includes(normalized))
         && (language === "Все языки" || item.language === language)
         && (city === "Все города" || item.city === city)
