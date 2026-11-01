@@ -4,6 +4,7 @@ import { getKhutba, khutbas as fallbackKhutbas } from "@/lib/khutbas";
 type SupabaseKhutba = {
   id: number;
   title: string;
+  topic: string | null;
   imam: string | null;
   mosque: string;
   city: string;
@@ -32,9 +33,14 @@ function mapKhutba(record: SupabaseKhutba): Khutba {
     ? record.date
     : new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" }).format(date);
   const durationMinutes = Number.parseInt(record.duration ?? "0", 10);
+  const topic = record.topic?.trim();
+  const usefulTopic = topic && !["без темы", "хутба", "пятничная хутба"].includes(topic.toLocaleLowerCase("ru"))
+    ? topic
+    : undefined;
   return {
     id: record.id,
-    title: record.title,
+    title: usefulTopic ?? record.title,
+    topic: usefulTopic,
     imam: record.imam ?? "Хазрат не указан",
     mosque: record.mosque,
     city: record.city,
