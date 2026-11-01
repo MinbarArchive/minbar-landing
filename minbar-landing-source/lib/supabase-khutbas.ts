@@ -27,12 +27,23 @@ function getConfig() {
   return url && key ? { url: url.replace(/\/$/, ""), key } : null;
 }
 
+function parseDurationSeconds(value: string | null) {
+  if (!value) return 1800;
+  const normalized = value.trim().toLocaleLowerCase("ru");
+  const seconds = normalized.match(/^(\d+)\s*сек/);
+  if (seconds) return Number(seconds[1]);
+  const minutes = normalized.match(/^(\d+)\s*мин/);
+  if (minutes) return Number(minutes[1]) * 60;
+  const clock = normalized.match(/^(?:(\d+):)?(\d{1,2}):(\d{2})$/);
+  if (clock) return Number(clock[1] ?? 0) * 3600 + Number(clock[2]) * 60 + Number(clock[3]);
+  return 1800;
+}
+
 function mapKhutba(record: SupabaseKhutba): Khutba {
   const date = new Date(`${record.date}T12:00:00`);
   const formattedDate = Number.isNaN(date.getTime())
     ? record.date
     : new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" }).format(date);
-  const durationMinutes = Number.parseInt(record.duration ?? "0", 10);
   const topic = record.topic?.trim();
   const usefulTopic = topic && !["без темы", "хутба", "пятничная хутба"].includes(topic.toLocaleLowerCase("ru"))
     ? topic
@@ -48,7 +59,7 @@ function mapKhutba(record: SupabaseKhutba): Khutba {
     date: formattedDate,
     isoDate: record.date,
     duration: record.duration ?? "Длительность не указана",
-    durationSeconds: Number.isFinite(durationMinutes) && durationMinutes > 0 ? durationMinutes * 60 : 1800,
+    durationSeconds: parseDurationSeconds(record.duration),
     summary: record.ai_summary?.trim() || `Пятничная хутба, прочитанная в мечети ${record.mosque}.`,
     audioUrl: record.audio_url,
     transcript: record.transcript?.trim() || undefined,
