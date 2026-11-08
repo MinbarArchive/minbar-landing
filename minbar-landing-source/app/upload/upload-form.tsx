@@ -15,13 +15,11 @@ export function UploadForm() {
       setFile(null);
       return;
     }
-    const extension = selected.name.toLowerCase().split(".").pop() ?? "";
-    const supportedExtensions = new Set(["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac", "webm"]);
-    const isAudio = selected.type.startsWith("audio/") || supportedExtensions.has(extension);
-    if (!isAudio) {
+    const isMp3 = selected.type === "audio/mpeg" || selected.name.toLowerCase().endsWith(".mp3");
+    if (!isMp3) {
       setFile(null);
       setStatus("error");
-      setMessage("Выберите аудиозапись или файл с диктофона.");
+      setMessage("Выберите аудиофайл в формате MP3.");
       return;
     }
     if (selected.size > 100 * 1024 * 1024) {
@@ -81,10 +79,10 @@ export function UploadForm() {
         <label><span>Дата пятницы *</span><input required name="date" type="date" /></label>
       </div>
       <div className="form-divider" />
-      <div className="form-section-title"><span>02</span><div><h2>Аудиозапись</h2><p>Подойдёт файл или запись с диктофона размером до 100 МБ.</p></div></div>
+      <div className="form-section-title"><span>02</span><div><h2>Аудиозапись</h2><p>Только MP3, рекомендуемый размер — до 100 МБ.</p></div></div>
       <label className="file-field">
-        <input required name="audio" type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.oga,.opus,.wav,.flac,.webm" onChange={(event) => selectFile(event.target.files?.[0] ?? null)} />
-        <UploadIcon size={24} /><strong>{file ? file.name : "Выберите аудиозапись"}</strong>
+        <input required name="audio" type="file" accept=".mp3,audio/mpeg,audio/*" onChange={(event) => selectFile(event.target.files?.[0] ?? null)} />
+        <UploadIcon size={24} /><strong>{file ? file.name : "Выберите MP3-файл"}</strong>
         {file ? <span>{(file.size / 1024 / 1024).toFixed(1)} МБ</span> : <><span className="desktop-file-hint">или перетащите его сюда</span><span className="mobile-file-hint">нажмите, чтобы выбрать из «Файлов»</span></>}
       </label>
       {status === "error" && <p className="form-error" role="alert">{message}</p>}

@@ -99,7 +99,7 @@ export default function AboutPage() {
         <article>
           <span>03</span>
           <h2>Добавьте запись</h2>
-          <p>Если у вас есть аудиозапись хутбы, заполните основные сведения и отправьте её в архив.</p>
+          <p>Если у вас есть MP3 хутбы, заполните основные сведения и отправьте запись в архив.</p>
         </article>
       </section>
 
@@ -128,7 +128,7 @@ export default function AboutPage() {
           <h2>Есть запись хутбы?</h2>
         </div>
         <div>
-          <p>Добавьте аудиозапись через сайт или отправьте её в Telegram-бот Minbar.</p>
+          <p>Загрузите MP3 через сайт или перейдите в Telegram-бот Minbar.</p>
           <div>
             <Link className="button button-primary" href="/upload">Загрузить хутбу</Link>
             <a className="button button-secondary" href="https://t.me/minbar_archive_bot" target="_blank" rel="noreferrer">Telegram</a>

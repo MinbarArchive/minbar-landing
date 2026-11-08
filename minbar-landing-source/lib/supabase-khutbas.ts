@@ -39,17 +39,6 @@ function parseDurationSeconds(value: string | null) {
   return 1800;
 }
 
-function displayTitle(value: string | null | undefined, mosque: string) {
-  const title = String(value ?? "")
-    .replace(/^хутба\s+на\s+тему\s*[:—-]?\s*/i, "")
-    .replace(/^тема\s*[:—-]\s*/i, "")
-    .trim();
-  const generic = new Set(["", "без темы", "хутба", "пятничная хутба"]);
-  return generic.has(title.toLocaleLowerCase("ru"))
-    ? `Хутба из мечети «${mosque}»`
-    : title;
-}
-
 function mapKhutba(record: SupabaseKhutba): Khutba {
   const date = new Date(`${record.date}T12:00:00`);
   const formattedDate = Number.isNaN(date.getTime())
@@ -61,7 +50,7 @@ function mapKhutba(record: SupabaseKhutba): Khutba {
     : undefined;
   return {
     id: record.id,
-    title: displayTitle(usefulTopic ?? record.title, record.mosque),
+    title: usefulTopic ?? record.title,
     topic: usefulTopic,
     imam: record.imam ?? "Хазрат не указан",
     mosque: record.mosque,
@@ -115,12 +104,7 @@ export async function uploadKhutba(formData: FormData) {
   if (!config) throw new Error("Supabase пока не подключён к этой версии сайта.");
 
   const audio = formData.get("audio");
-  if (!(audio instanceof File) || audio.size === 0) throw new Error("Выберите аудиозапись.");
-  const extension = audio.name.toLowerCase().split(".").pop() ?? "";
-  const supportedExtensions = new Set(["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac", "webm"]);
-  if (!audio.type.startsWith("audio/") && !supportedExtensions.has(extension)) {
-    throw new Error("Выберите аудиозапись в поддерживаемом формате.");
-  }
+  if (!(audio instanceof File) || audio.size === 0) throw new Error("Выберите MP3-файл.");
   const cleanName = audio.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
   const fileName = `${Date.now()}-${cleanName}`;
   const storageResponse = await fetch(`${config.url}/storage/v1/object/khutbas/${encodeURIComponent(fileName)}`, {

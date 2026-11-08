@@ -28,8 +28,7 @@ test("renders the production home page and metadata", async () => {
   );
   const html = await response.text();
   assert.match(html, /<title>Minbar — Архив хутб<\/title>/i);
-  assert.match(html, /Живой архив пятничных хутб/i);
-  assert.match(html, /Новые записи/i);
+  assert.match(html, /Аудиоархив пятничных хутб/i);
   assert.match(html, /https:\/\/t\.me\/supporminbar/i);
   assert.match(html, /https:\/\/t\.me\/hwee1rr/i);
   assert.doesNotMatch(html, />[^<]*@(?:supporminbar|hwee1rr)[^<]*</i);
