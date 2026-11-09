@@ -55,14 +55,14 @@ export default async function Home() {
       <section className="section-shell contribute">
         <div><p className="eyebrow">Пополнить архив</p><h2>Есть запись хутбы?</h2></div>
         <div className="contribute-copy">
-          <p>Загрузите MP3 и основные данные. После проверки запись появится в архиве.</p>
+          <p>Загрузите аудиозапись хутбы и укажите основные данные. После проверки запись появится в архиве.</p>
           <div className="contribute-actions"><Link className="button button-primary" href="/upload">Загрузить хутбу</Link></div>
         </div>
       </section>
 
       <section
         className="section-shell"
-        aria-label="Цитата недели"
+        aria-label="Цитата часа"
         style={{ paddingBlock: "8px 76px" }}
       >
         <WeeklyReminder />

@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 const reminders = [
   {
     theme: "Джума",
@@ -19,18 +23,26 @@ const reminders = [
   },
 ] as const;
 
-function getWeekNumber(date: Date) {
-  const start = Date.UTC(date.getUTCFullYear(), 0, 1);
-  return Math.floor((date.getTime() - start) / 604_800_000);
+function getHourlyReminderIndex(timestamp: number) {
+  return Math.floor(timestamp / 3_600_000) % reminders.length;
 }
 
 export function WeeklyReminder() {
-  const reminder = reminders[getWeekNumber(new Date()) % reminders.length];
+  const [reminderIndex, setReminderIndex] = useState(0);
+
+  useEffect(() => {
+    const updateReminder = () => setReminderIndex(getHourlyReminderIndex(Date.now()));
+    updateReminder();
+    const interval = window.setInterval(updateReminder, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const reminder = reminders[reminderIndex];
 
   return (
     <aside style={{ width: "100%", maxWidth: "780px" }} aria-labelledby="weekly-reminder-title">
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", color: "var(--subtle)", fontSize: "0.7rem", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-        <span id="weekly-reminder-title">Цитата недели</span>
+        <span id="weekly-reminder-title">Цитата часа</span>
         <span aria-hidden="true">·</span>
         <span style={{ color: "var(--green)" }}>{reminder.theme}</span>
       </div>
