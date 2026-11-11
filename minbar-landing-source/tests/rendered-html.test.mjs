@@ -57,3 +57,20 @@ test("renders Telegram deep link and transcript state on a khutbah page", async 
   assert.match(html, /Расшифровка аудиозаписи/i);
   assert.doesNotMatch(html, /chatgpt\.site|без темы|хутба на тему/i);
 });
+
+test("routes uploads through the moderated Telegram flow", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("upload-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const env = { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
+  const ctx = { waitUntil() {}, passThroughOnException() {} };
+
+  const page = await worker.fetch(new Request("http://localhost/upload", { headers: { accept: "text/html" } }), env, ctx);
+  const html = await page.text();
+  assert.equal(page.status, 200);
+  assert.match(html, /https:\/\/t\.me\/minbar_archive_bot\?start=upload/i);
+  assert.doesNotMatch(html, /type=["']file["']/i);
+
+  const api = await worker.fetch(new Request("http://localhost/api/khutbahs", { method: "POST" }), env, ctx);
+  assert.equal(api.status, 410);
+});

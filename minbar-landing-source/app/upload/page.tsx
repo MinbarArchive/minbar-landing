@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { UploadForm } from "./upload-form";
+import Link from "next/link";
 
 export const metadata: Metadata = { title: "Загрузить хутбу", description: "Добавьте аудиозапись хутбы в архив Minbar." };
 
@@ -17,7 +17,16 @@ export default function UploadPage() {
             <li><span>03</span><div><strong>Дождитесь проверки</strong><p>Команда Minbar проверит данные перед публикацией.</p></div></li>
           </ol>
         </aside>
-        <UploadForm />
+        <div className="upload-success">
+          <span>Безопасная загрузка</span>
+          <h2>Добавьте запись через Telegram.</h2>
+          <p>
+            Бот подскажет каждый шаг, примет аудиофайл или голосовое сообщение и автоматически проверит запись перед публикацией.
+          </p>
+          <Link className="button button-primary" href="https://t.me/minbar_archive_bot?start=upload">
+            Открыть Telegram-бот ↗
+          </Link>
+        </div>
       </section>
     </main>
   );

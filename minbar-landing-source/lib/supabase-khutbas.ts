@@ -26,7 +26,6 @@ function getConfig() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return url && key ? { url: url.replace(/\/$/, ""), key } : null;
 }
-
 function parseDurationSeconds(value: string | null) {
   if (!value) return 1800;
   const normalized = value.trim().toLocaleLowerCase("ru");
@@ -110,47 +109,3 @@ export async function loadKhutba(id: number): Promise<Khutba | undefined> {
   }
 }
 
-export async function uploadKhutba(formData: FormData) {
-  const config = getConfig();
-  if (!config) throw new Error("Supabase пока не подключён к этой версии сайта.");
-
-  const audio = formData.get("audio");
-  if (!(audio instanceof File) || audio.size === 0) throw new Error("Выберите аудиозапись.");
-  const extension = audio.name.toLowerCase().split(".").pop() ?? "";
-  const supportedExtensions = new Set(["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac", "webm"]);
-  if (!audio.type.startsWith("audio/") && !supportedExtensions.has(extension)) {
-    throw new Error("Выберите аудиозапись в поддерживаемом формате.");
-  }
-  const cleanName = audio.name.replace(/[^a-zA-Z0-9._-]+/g, "-");
-  const fileName = `${Date.now()}-${cleanName}`;
-  const storageResponse = await fetch(`${config.url}/storage/v1/object/khutbas/${encodeURIComponent(fileName)}`, {
-    method: "POST",
-    headers: { apikey: config.key, Authorization: `Bearer ${config.key}`, "Content-Type": audio.type || "audio/mpeg", "x-upsert": "false" },
-    body: audio,
-  });
-  if (!storageResponse.ok) throw new Error("Не удалось загрузить аудиофайл.");
-
-  const audioUrl = `${config.url}/storage/v1/object/public/khutbas/${encodeURIComponent(fileName)}`;
-  const mosque = String(formData.get("mosque") ?? "");
-  const record = {
-    title: `Пятничная хутба — ${mosque}`,
-    topic: "Пятничная хутба",
-    imam: String(formData.get("imam") ?? "").trim() || null,
-    mosque,
-    city: String(formData.get("city") ?? ""),
-    language: String(formData.get("language") ?? "Русский"),
-    date: String(formData.get("date") ?? ""),
-    duration: null,
-    audio_url: audioUrl,
-  };
-  if (!record.mosque || !record.city || !record.date) throw new Error("Заполните все обязательные поля.");
-  const date = new Date(`${record.date}T12:00:00`);
-  if (Number.isNaN(date.getTime()) || date.getDay() !== 5) throw new Error("Выберите дату пятничной хутбы.");
-
-  const insertResponse = await fetch(`${config.url}/rest/v1/khutbas`, {
-    method: "POST",
-    headers: { apikey: config.key, Authorization: `Bearer ${config.key}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-    body: JSON.stringify(record),
-  });
-  if (!insertResponse.ok) throw new Error("Аудио загружено, но запись не удалось добавить в архив.");
-}
