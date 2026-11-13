@@ -74,3 +74,18 @@ test("routes uploads through the moderated Telegram flow", async () => {
   const api = await worker.fetch(new Request("http://localhost/api/khutbahs", { method: "POST" }), env, ctx);
   assert.equal(api.status, 410);
 });
+
+test("keeps the admin area private and out of search", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("admin-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const env = { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } };
+  const ctx = { waitUntil() {}, passThroughOnException() {} };
+
+  const admin = await worker.fetch(new Request("http://localhost/admin", { headers: { accept: "text/html" } }), env, ctx);
+  assert.equal(admin.status, 307);
+  assert.equal(new URL(admin.headers.get("location"), "http://localhost").pathname, "/admin/login");
+
+  const robots = await worker.fetch(new Request("http://localhost/robots.txt"), env, ctx);
+  assert.match(await robots.text(), /Disallow:\s*\/admin\//i);
+});
