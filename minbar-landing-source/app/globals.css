@@ -112,6 +112,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .text-link span { margin-left: 8px; color: var(--accent); transition: margin 160ms ease; }
 .text-link:hover span { margin-left: 12px; }
 
+.share-page { min-height: 70svh; display: grid; place-items: center; padding: 42px 24px; }
+.share-panel { width: min(460px, 100%); padding: 36px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); text-align: center; }
+.share-mark { width: 58px; height: 58px; display: grid; place-items: center; margin: 0 auto 22px; border: 1px solid var(--line-light); border-radius: 16px; color: var(--ink); font-family: Georgia, serif; font-size: 1.7rem; }
+.share-panel h1 { margin: 12px 0 14px; font-size: clamp(2rem, 8vw, 2.8rem); line-height: 1.05; letter-spacing: -0.05em; font-weight: 580; }
+.share-panel > p:not(.eyebrow, .share-error) { margin: 0 auto; color: var(--muted); line-height: 1.65; }
+.share-action { width: 100%; margin-top: 30px; }
+.share-error { margin: 16px 0 0; color: var(--danger); font-size: 0.87rem; }
+
 .hero { position: relative; isolation: isolate; overflow: clip; min-height: 540px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(48px, 7vw, 92px); align-items: center; padding-block: 52px 58px; }
 .hero-copy, .hero .featured { position: relative; z-index: 2; }
 .hero-copy { padding-bottom: 18px; }
