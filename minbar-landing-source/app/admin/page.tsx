@@ -19,14 +19,18 @@ function formatDate(value: string | null | undefined) {
 const submissionStatus: Record<AdminSubmission["status"], string> = { pending: "Ожидает", reviewing: "Проверяется", approved: "Одобрена", rejected: "Отклонена" };
 const supportStatus: Record<AdminSupportRequest["status"], string> = { open: "Новый", sending: "Отвечают", answered: "Закрыт", delivery_unknown: "Проверить доставку" };
 
+function telegramHref(id: number, username?: string | null) {
+  return username ? `https://t.me/${username}` : `tg://user?id=${id}`;
+}
+
 function SubmissionRows({ items }: { items: AdminSubmission[] }) {
   if (!items.length) return <p className="admin-empty">Заявок пока нет.</p>;
   return <div className="admin-list">{items.map((item) => (
     <article className="admin-list-row" key={item.id}>
       <div><strong>{item.mosque}</strong><span>{item.city} · {item.language}</span></div>
       <div><span>Отправитель</span><strong>{item.username ? `@${item.username}` : `ID ${item.telegram_id}`}</strong></div>
-      <div><span>Дата хутбы</span><strong>{item.khutba_date}</strong></div>
-      <span className={`admin-status admin-status-${item.status}`}>{submissionStatus[item.status]}</span>
+      <div><span>Дата хутбы</span><strong>{item.khutba_date}</strong><span>Получена {formatDate(item.created_at)}</span></div>
+      <div><span className={`admin-status admin-status-${item.status}`}>{submissionStatus[item.status]}</span><a className="text-link" href={telegramHref(item.telegram_id, item.username)}>Telegram →</a></div>
     </article>
   ))}</div>;
 }
@@ -35,7 +39,7 @@ function SupportRows({ items }: { items: AdminSupportRequest[] }) {
   if (!items.length) return <p className="admin-empty">Обращений пока нет.</p>;
   return <div className="admin-list">{items.map((item) => (
     <article className="admin-message-row" key={item.id}>
-      <div className="admin-message-meta"><strong>ID {item.telegram_id}</strong><span>{formatDate(item.created_at)}</span><span className={`admin-status admin-status-${item.status}`}>{supportStatus[item.status]}</span></div>
+      <div className="admin-message-meta"><strong>ID {item.telegram_id}</strong><span>{formatDate(item.created_at)}</span><span className={`admin-status admin-status-${item.status}`}>{supportStatus[item.status]}</span><a className="text-link" href={telegramHref(item.telegram_id)}>Открыть Telegram →</a></div>
       <p>{item.question}</p>
     </article>
   ))}</div>;
@@ -45,7 +49,7 @@ function ViolationRows({ items }: { items: AdminViolation[] }) {
   if (!items.length) return <p className="admin-empty">Нарушений не зафиксировано.</p>;
   return <div className="admin-list">{items.map((item) => (
     <article className="admin-message-row" key={item.id}>
-      <div className="admin-message-meta"><strong>{item.username ? `@${item.username}` : item.full_name || `ID ${item.telegram_id}`}</strong><span>ID {item.telegram_id}</span><span>{formatDate(item.created_at)}</span></div>
+      <div className="admin-message-meta"><strong>{item.username ? `@${item.username}` : item.full_name || `ID ${item.telegram_id}`}</strong><span>ID {item.telegram_id}</span><span>{formatDate(item.created_at)}</span><a className="text-link" href={telegramHref(item.telegram_id, item.username)}>Telegram →</a></div>
       <p><b>{item.reason}</b>{item.content ? ` — «${item.content}»` : ""}</p>
     </article>
   ))}</div>;
@@ -63,12 +67,13 @@ export default async function AdminPage() {
 
   const queue = data.moderation.recent.filter((item) => item.status === "pending" || item.status === "reviewing");
   const history = data.moderation.recent.filter((item) => item.status === "approved" || item.status === "rejected");
+  const totalSubmissions = data.moderation.pending + data.moderation.reviewing + data.moderation.approved + data.moderation.rejected;
 
   return (
     <main className="admin-shell section-shell">
       <header className="admin-heading">
         <div><p className="eyebrow">Закрытый раздел</p><h1>Админка Minbar</h1><p>Обновлено {formatDate(data.generated_at)} · время московское</p></div>
-        <div className="admin-heading-actions"><Link className="button button-secondary" href="/">Открыть сайт</Link><form action="/api/admin/logout" method="post"><button className="button button-secondary">Выйти</button></form></div>
+        <div className="admin-heading-actions"><Link className="button button-secondary" href="/admin">Обновить данные</Link><Link className="button button-secondary" href="/">Открыть сайт</Link><form action="/api/admin/logout" method="post"><button className="button button-secondary">Выйти</button></form></div>
       </header>
 
       <section className="admin-metrics" aria-label="Основные показатели">
@@ -79,13 +84,13 @@ export default async function AdminPage() {
       </section>
 
       <section className="admin-secondary-metrics">
-        <p><span>Активны 7 дней</span><strong>{number.format(data.users.last_7_days)}</strong></p><p><span>Активны 30 дней</span><strong>{number.format(data.users.last_30_days)}</strong></p><p><span>Избранных записей</span><strong>{number.format(data.favorites.total)}</strong></p><p><span>Готово расшифровок</span><strong>{number.format(data.archive.transcripts_ready)}</strong></p><p><span>Ждут расшифровки</span><strong>{number.format(data.archive.transcripts_pending)}</strong></p><p><span>Нарушений</span><strong>{number.format(data.violations.total)}</strong></p>
+        <p><span>Всего заявок</span><strong>{number.format(totalSubmissions)}</strong></p><p><span>Активны 7 дней</span><strong>{number.format(data.users.last_7_days)}</strong></p><p><span>Активны 30 дней</span><strong>{number.format(data.users.last_30_days)}</strong></p><p><span>Избранных записей</span><strong>{number.format(data.favorites.total)}</strong></p><p><span>Готово расшифровок</span><strong>{number.format(data.archive.transcripts_ready)}</strong></p><p><span>Ждут расшифровки</span><strong>{number.format(data.archive.transcripts_pending)}</strong></p><p><span>Нарушений</span><strong>{number.format(data.violations.total)}</strong></p>
       </section>
 
       <section className="admin-section"><div className="admin-section-heading"><div><p className="eyebrow">Модерация</p><h2>На проверке</h2></div><span>{queue.length}</span></div><SubmissionRows items={queue} /></section>
       <section className="admin-section"><div className="admin-section-heading"><div><p className="eyebrow">Поддержка</p><h2>Обращения</h2></div><span>{data.support.open} открыто</span></div><SupportRows items={data.support.recent} /></section>
       <section className="admin-section"><div className="admin-section-heading"><div><p className="eyebrow">Безопасность</p><h2>Журнал нарушений</h2></div><span>{data.violations.total}</span></div><ViolationRows items={data.violations.recent} /></section>
-      <section className="admin-section"><div className="admin-section-heading"><div><p className="eyebrow">История</p><h2>Проверенные заявки</h2></div><span>{data.moderation.approved} одобрено · {data.moderation.rejected} отклонено</span></div><SubmissionRows items={history} /></section>
+      <section className="admin-section"><div className="admin-section-heading"><div><p className="eyebrow">История</p><h2>Проверенные заявки</h2></div><span>{totalSubmissions} всего · {data.moderation.approved} одобрено · {data.moderation.rejected} отклонено</span></div><SubmissionRows items={history} /></section>
 
       <section className="admin-section">
         <div className="admin-section-heading"><div><p className="eyebrow">Архив</p><h2>Последние хутбы</h2></div><Link href="/archive">Открыть архив →</Link></div>

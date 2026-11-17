@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import { AudioPlayerProvider, GlobalPlayer } from "@/components/audio-player";
-import { MaintenanceScreen } from "@/components/maintenance-screen";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { MaintenanceGate } from "@/components/maintenance-gate";
 import { loadMaintenanceState } from "@/lib/maintenance";
 import "./globals.css";
 
@@ -32,16 +29,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="ru">
       <body>
-        {maintenance.enabled ? (
-          <MaintenanceScreen state={maintenance} />
-        ) : (
-          <AudioPlayerProvider>
-            <SiteHeader />
-            {children}
-            <SiteFooter />
-            <GlobalPlayer />
-          </AudioPlayerProvider>
-        )}
+        <MaintenanceGate state={maintenance}>{children}</MaintenanceGate>
       </body>
     </html>
   );
